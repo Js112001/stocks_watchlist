@@ -1,4 +1,4 @@
-import '../entities/stock.dart';
+import '../entities/instrument.dart';
 import '../repository/watchlist_repository.dart';
 
 class GetWatchlist {
@@ -6,5 +6,5 @@ class GetWatchlist {
 
   GetWatchlist(this.repository);
 
-  Future<List<Stock>> call() => repository.getWatchlist();
+  Future<List<Instrument>> call() => repository.getWatchlist();
 }

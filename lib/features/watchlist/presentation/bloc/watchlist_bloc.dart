@@ -1,44 +1,28 @@
-import 'package:flutter/foundation.dart';
-import '../../domain/entities/stock.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/usecases/get_watchlist.dart';
+import 'watchlist_event.dart';
+import 'watchlist_state.dart';
 
-enum WatchlistStatus { initial, loading, loaded, error }
+export 'watchlist_event.dart';
+export 'watchlist_state.dart';
 
-class WatchlistState {
-  final WatchlistStatus status;
-  final List<Stock> stocks;
-  final String? errorMessage;
+class WatchlistBloc extends Bloc<WatchlistEvent, WatchlistState> {
+  final GetWatchlist _getWatchlist;
 
-  const WatchlistState({
-    this.status = WatchlistStatus.initial,
-    this.stocks = const [],
-    this.errorMessage,
-  });
-
-  WatchlistState copyWith({WatchlistStatus? status, List<Stock>? stocks, String? errorMessage}) {
-    return WatchlistState(
-      status: status ?? this.status,
-      stocks: stocks ?? this.stocks,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
+  WatchlistBloc(this._getWatchlist) : super(const WatchlistState()) {
+    on<LoadWatchlist>(_onLoadWatchlist);
   }
-}
 
-class WatchlistBloc extends ChangeNotifier {
-  final GetWatchlist getWatchlist;
-  WatchlistState state = const WatchlistState();
-
-  WatchlistBloc(this.getWatchlist);
-
-  Future<void> loadWatchlist() async {
-    state = state.copyWith(status: WatchlistStatus.loading);
-    notifyListeners();
+  Future<void> _onLoadWatchlist(
+    LoadWatchlist event,
+    Emitter<WatchlistState> emit,
+  ) async {
+    emit(state.copyWith(status: WatchlistStatus.loading));
     try {
-      final stocks = await getWatchlist();
-      state = state.copyWith(status: WatchlistStatus.loaded, stocks: stocks);
+      final instruments = await _getWatchlist();
+      emit(state.copyWith(status: WatchlistStatus.loaded, instruments: instruments));
     } catch (e) {
-      state = state.copyWith(status: WatchlistStatus.error, errorMessage: e.toString());
+      emit(state.copyWith(status: WatchlistStatus.error, errorMessage: e.toString()));
     }
-    notifyListeners();
   }
 }

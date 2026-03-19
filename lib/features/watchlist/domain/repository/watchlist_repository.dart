@@ -1,7 +1,5 @@
-import '../entities/stock.dart';
+import '../entities/instrument.dart';
 
 abstract class WatchlistRepository {
-  Future<List<Stock>> getWatchlist();
-  Future<void> addStock(String symbol);
-  Future<void> removeStock(String symbol);
+  Future<List<Instrument>> getWatchlist();
 }
