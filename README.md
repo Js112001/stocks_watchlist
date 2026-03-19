@@ -4,7 +4,7 @@ A Flutter application for managing multiple stock watchlists with drag-and-drop 
 
 ## Demo
 
-https://github.com/Js112001/stocks_watchlist/assets/demo.mp4
+https://github.com/user-attachments/assets/ef5e76c1-ce38-4e25-a33c-d5df5dae8ec1
 
 ## Features
 
