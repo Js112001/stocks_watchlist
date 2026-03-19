@@ -1,4 +1,4 @@
-import '../../domain/entities/instrument.dart';
+import 'package:stocks_watchlist/features/watchlist/domain/entities/instrument.dart';
 
 class InstrumentModel extends Instrument {
   const InstrumentModel({
@@ -20,10 +20,10 @@ class InstrumentModel extends Instrument {
   }
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'type': type,
-        'price': price,
-        'change': change,
-        'percent': percent,
-      };
+    'name': name,
+    'type': type,
+    'price': price,
+    'change': change,
+    'percent': percent,
+  };
 }

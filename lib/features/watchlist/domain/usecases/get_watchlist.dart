@@ -1,10 +1,11 @@
-import '../entities/instrument.dart';
-import '../repository/watchlist_repository.dart';
+import 'package:stocks_watchlist/features/watchlist/domain/entities/instrument.dart';
+import 'package:stocks_watchlist/features/watchlist/domain/repository/watchlist_repository.dart';
 
 class GetWatchlist {
   final WatchlistRepository repository;
 
   GetWatchlist(this.repository);
 
-  Future<List<Instrument>> call() => repository.getWatchlist();
+  Future<List<Instrument>> call(int watchlistIndex) =>
+      repository.getWatchlist(watchlistIndex);
 }

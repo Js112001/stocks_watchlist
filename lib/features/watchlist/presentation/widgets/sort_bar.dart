@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stocks_watchlist/utils/app_constants.dart';
 
 class SortBar extends StatelessWidget {
   const SortBar({super.key});
@@ -19,7 +20,7 @@ class SortBar extends StatelessWidget {
               children: [
                 Icon(Icons.sort),
                 SizedBox(width: 8),
-                Text('Sort by'),
+                Text(AppConstants.sortBy),
               ],
             ),
           ),

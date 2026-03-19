@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stocks_watchlist/utils/app_constants.dart';
 
 class WatchlistSearchBar extends StatelessWidget {
   const WatchlistSearchBar({super.key});
@@ -9,7 +10,7 @@ class WatchlistSearchBar extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: TextField(
         decoration: InputDecoration(
-          hintText: 'Search for instruments',
+          hintText: AppConstants.searchHint,
           prefixIcon: const Icon(Icons.search),
           filled: true,
           border: OutlineInputBorder(

@@ -1,67 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/entities/instrument.dart';
-import '../bloc/watchlist_bloc.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/bloc/watchlist_bloc.dart';
+import 'package:stocks_watchlist/utils/app_constants.dart';
+import 'package:stocks_watchlist/utils/app_textstyle.dart';
 
-class EditWatchlistScreen extends StatefulWidget {
+class EditWatchlistScreen extends StatelessWidget {
   final int watchlistIndex;
 
   const EditWatchlistScreen({super.key, required this.watchlistIndex});
 
-  @override
-  State<EditWatchlistScreen> createState() => _EditWatchlistScreenState();
-}
-
-class _EditWatchlistScreenState extends State<EditWatchlistScreen> {
-  List<Instrument> list = [];
-  bool _initialized = false;
-
-  String get _watchlistName => 'Watchlist ${widget.watchlistIndex + 1}';
+  void _showRenameDialog(BuildContext context, String currentName) {
+    final controller = TextEditingController(text: currentName);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(AppConstants.renameWatchlist),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: AppConstants.enterWatchlistName,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(AppConstants.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                context.read<WatchlistBloc>().add(UpdateDraftName(name));
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text(AppConstants.save),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Edit $_watchlistName')),
-      body: BlocBuilder<WatchlistBloc, WatchlistState>(
-        builder: (context, state) {
-          if (state.status == WatchlistStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!_initialized && state.status == WatchlistStatus.loaded) {
-            list = List.from(state.instruments);
-            _initialized = true;
-          }
-          return Column(
+    return BlocBuilder<WatchlistBloc, WatchlistState>(
+      builder: (context, state) {
+        final draft = state.editDraft;
+        if (draft == null) {
+          return Scaffold(
+            appBar: AppBar(title: Text('${AppConstants.editPrefix} ${state.nameFor(watchlistIndex)}')),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('${AppConstants.editPrefix} ${draft.name}'),
+          ),
+          body: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(_watchlistName, style: const TextStyle(fontSize: 18)),
-                    const Icon(Icons.edit),
+                    Text(draft.name, style: AppTextStyle.heading),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _showRenameDialog(context, draft.name),
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: ReorderableListView.builder(
-                  itemCount: list.length,
+                  itemCount: draft.instruments.length,
                   onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex--;
-                      final item = list.removeAt(oldIndex);
-                      list.insert(newIndex, item);
-                    });
+                    context.read<WatchlistBloc>().add(ReorderDraft(oldIndex, newIndex));
                   },
                   itemBuilder: (context, index) {
-                    final item = list[index];
+                    final item = draft.instruments[index];
                     return ListTile(
                       key: ValueKey('${item.name}_$index'),
                       leading: const Icon(Icons.drag_handle),
                       title: Text(item.name),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete),
-                        onPressed: () => setState(() => list.removeAt(index)),
+                        onPressed: () {
+                          context.read<WatchlistBloc>().add(DeleteDraftItem(index));
+                        },
                       ),
                     );
                   },
@@ -76,25 +104,40 @@ class _EditWatchlistScreenState extends State<EditWatchlistScreen> {
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
                         backgroundColor: Colors.grey.shade300,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Edit other watchlists', style: TextStyle(color: Colors.black)),
+                      child: const Text(
+                        AppConstants.editOtherWatchlists,
+                        style: AppTextStyle.buttonBlack,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        context.read<WatchlistBloc>().add(SaveDraft());
+                        Navigator.pop(context);
+                      },
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 50),
                         backgroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Save Watchlist'),
+                      child: const Text(
+                        AppConstants.saveWatchlist,
+                        style: AppTextStyle.buttonWhite,
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

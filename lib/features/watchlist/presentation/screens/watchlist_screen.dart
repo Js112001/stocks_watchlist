@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../bloc/watchlist_bloc.dart';
-import '../widgets/instrument_tile.dart';
-import '../widgets/search_bar.dart';
-import '../widgets/sort_bar.dart';
-import 'edit_watchlist_screen.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/bloc/watchlist_bloc.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/screens/edit_watchlist_screen.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/widgets/instrument_tile.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/widgets/search_bar.dart';
+import 'package:stocks_watchlist/features/watchlist/presentation/widgets/sort_bar.dart';
+import 'package:stocks_watchlist/utils/app_constants.dart';
 
 class WatchlistScreen extends StatefulWidget {
   const WatchlistScreen({super.key});
@@ -33,24 +34,41 @@ class _WatchlistScreenState extends State<WatchlistScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Watchlist'),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: List.generate(3, (i) => Tab(text: 'Watchlist ${i + 1}')),
+        title: const Text(AppConstants.watchlist),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(100),
+          child: Column(
+            children: [
+              const WatchlistSearchBar(),
+              BlocBuilder<WatchlistBloc, WatchlistState>(
+                buildWhen: (prev, curr) => prev.names != curr.names,
+                builder: (context, state) {
+                  return TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    tabs: List.generate(3, (i) => Tab(text: state.nameFor(i))),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: List.generate(3, (_) => const _WatchlistTab()),
+        children: List.generate(3, (i) => _WatchlistTab(watchlistIndex: i)),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => EditWatchlistScreen(watchlistIndex: _tabController.index),
-          ),
-        ),
+        onPressed: () {
+          final index = _tabController.index;
+          context.read<WatchlistBloc>().add(StartEditing(index));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => EditWatchlistScreen(watchlistIndex: index),
+            ),
+          );
+        },
         child: const Icon(Icons.edit),
       ),
     );
@@ -58,24 +76,33 @@ class _WatchlistScreenState extends State<WatchlistScreen>
 }
 
 class _WatchlistTab extends StatelessWidget {
-  const _WatchlistTab();
+  final int watchlistIndex;
+
+  const _WatchlistTab({required this.watchlistIndex});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const WatchlistSearchBar(),
         const SortBar(),
         Expanded(
           child: BlocBuilder<WatchlistBloc, WatchlistState>(
-            builder: (context, state) => switch (state.status) {
-              WatchlistStatus.loading => const Center(child: CircularProgressIndicator()),
-              WatchlistStatus.error => Center(child: Text(state.errorMessage ?? 'Error')),
-              WatchlistStatus.loaded => ListView.builder(
-                  itemCount: state.instruments.length,
-                  itemBuilder: (_, i) => InstrumentTile(item: state.instruments[i]),
+            builder: (context, state) {
+              final status = state.statusFor(watchlistIndex);
+              final instruments = state.instrumentsFor(watchlistIndex);
+              return switch (status) {
+                WatchlistStatus.loading => const Center(
+                  child: CircularProgressIndicator(),
                 ),
-              _ => const SizedBox.shrink(),
+                WatchlistStatus.error => Center(
+                  child: Text(state.errorMessage ?? AppConstants.error),
+                ),
+                WatchlistStatus.loaded => ListView.builder(
+                  itemCount: instruments.length,
+                  itemBuilder: (_, i) => InstrumentTile(item: instruments[i]),
+                ),
+                _ => const SizedBox.shrink(),
+              };
             },
           ),
         ),

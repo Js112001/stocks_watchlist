@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/instrument.dart';
+import 'package:stocks_watchlist/features/watchlist/domain/entities/instrument.dart';
+import 'package:stocks_watchlist/utils/app_textstyle.dart';
 
 class InstrumentTile extends StatelessWidget {
   final Instrument item;
@@ -18,10 +19,10 @@ class InstrumentTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(item.price.toStringAsFixed(2), style: TextStyle(color: color)),
+          Text(item.price.toStringAsFixed(2), style: AppTextStyle.price(color)),
           Text(
             '${item.change.toStringAsFixed(2)} (${item.percent.toStringAsFixed(2)}%)',
-            style: const TextStyle(fontSize: 12),
+            style: AppTextStyle.caption,
           ),
         ],
       ),
