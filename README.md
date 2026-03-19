@@ -2,6 +2,10 @@
 
 A Flutter application for managing multiple stock watchlists with drag-and-drop reordering, inline renaming, and instrument management — built using Clean Architecture and the BLoC pattern.
 
+## Demo
+
+https://github.com/Js112001/stocks_watchlist/assets/demo.mp4
+
 ## Features
 
 - **Multiple Watchlists** — 3 independent watchlists, each with its own set of instruments, accessible via tabs
